@@ -31,34 +31,33 @@ const float dataTexCoor[] =
         };
 
 
-
 ///////////////////// 米2S、华为 等//////////////////////////
 GLfloat squareVertices_zero[] = {
-        0.0f,   1.0f,
-        1.0f,   1.0f,
-        0.0f,   0.0f,
-        1.0f,   0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f,
 };
 GLfloat coordVertices_zero[] = {
-        -1.0f,  -1.0f,
-        1.0f,  -1.0f,
-        -1.0f,   1.0f,
-        1.0f,   1.0f,
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        -1.0f, 1.0f,
+        1.0f, 1.0f,
 };
 
 ////////////////////// 红米、台电pad、kindle pad、SS_SCH-1939D等//////////////////////////
 GLfloat squareVertices_one[] = {
-        -1.0f,  -1.0f,
-        1.0f,  -1.0f,
-        -1.0f,   1.0f,
-        1.0f,   1.0f,
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        -1.0f, 1.0f,
+        1.0f, 1.0f,
 };
 
 GLfloat coordVertices_one[] = {
-        0.0f,   1.0f,
-        1.0f,   1.0f,
-        0.0f,   0.0f,
-        1.0f,   0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f,
 };
 
 //顶点着色器脚本代码
@@ -69,7 +68,7 @@ const char *codeVertexShader = \
 "varying vec2 vTexCoor;		 						\n" \
 "void main() 										\n" \
 "{ 													\n" \
-"	gl_Position = uMVPMatrix*vec4(aPosition, 1); 	\n" \
+"	gl_Position = vec4(aPosition, 1); 	\n" \
 " 	vTexCoor = aTexCoor;							\n" \
 "} 													\n" \
 ;
@@ -148,6 +147,8 @@ void init(int pWidth, int pHeight) {
     LOGE("width = %d, height = %d", instance->pWidth, instance->pHeight);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
+    glViewport(0, 0, instance->pWidth, instance->pHeight);
+
 //  glEnable(GL_DEPTH_TEST);
     LOGE("%s %d error = %d", __FILE__, __LINE__, glGetError());
 }
@@ -194,9 +195,12 @@ void
 drawFrame(void *ins) {
     LOGI_EU("%s", __FUNCTION__);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glDisable(GL_DEPTH_TEST);
+    glClearColor(0, 0, 0, 1);
+    // Clear the color buffer
+    glClear(GL_COLOR_BUFFER_BIT);
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK);
+//    glDisable(GL_DEPTH_TEST);
     LOGE("%s %d error = %d", __FILE__, __LINE__, glGetError());
     Instance *instance = (Instance *) ins;
     if (instance == 0) {
@@ -206,8 +210,8 @@ drawFrame(void *ins) {
     LOGE("%s %d error = %d", __FILE__, __LINE__, glGetError());
     //使用编译好的program
     glUseProgram(instance->pProgram);
-//    float *maMVPMatrix =  IJK_GLES2_loadOrtho( -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
-    float *maMVPMatrix = test_loadOrtho();
+    float *maMVPMatrix =  IJK_GLES2_loadOrtho( -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+//    float *maMVPMatrix = test_loadOrtho();
     //图像旋转270度
 //    float *maMVPMatrix = getRotateM(NULL, 0, 270, 0, 0, 1);
     //float * maMVPMatrix = getRotateM(NULL, 0, 0, 0, 0, 1);
@@ -216,6 +220,19 @@ drawFrame(void *ins) {
 //
     free(maMVPMatrix);
 
+    const GLfloat sPos[] = {
+            -1.0f, 1.0f,    //左上角
+            -1.0f, -1.0f,   //左下角
+            1.0f, 1.0f,     //右上角
+            1.0f, -1.0f     //右下角
+    };
+
+    const GLfloat sCoord[] = {
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+    };
 
     //传入顶点坐标
     LOGE("%s %d error = %d", __FILE__, __LINE__, glGetError());
@@ -224,7 +241,7 @@ drawFrame(void *ins) {
                           GL_FLOAT,//GLenum type
                           GL_FALSE,//GLboolean normalized
                           0,//GLsizei stride  dataVertex中三个数据一组
-                          dataVertex//const GLvoid * ptr
+                          sPos//const GLvoid * ptr
     );
     LOGE("%s %d error = %d", __FILE__, __LINE__, glGetError());
     //传入纹理坐标
@@ -233,7 +250,7 @@ drawFrame(void *ins) {
                           GL_FLOAT,//GLenum type
                           GL_FALSE,//GLboolean normalized
                           0,//GLsizei stride   dataTexCoor中两个数据一组
-                          dataTexCoor//const GLvoid * ptr
+                          sCoord//const GLvoid * ptr
     );
     LOGE("%s %d error = %d", __FILE__, __LINE__, glGetError());
     //绑定纹理
@@ -271,13 +288,28 @@ void drawFrame2(uint8_t *srcp) {
 
 }
 
+void copyFrameData(uint8_t *dst, uint8_t *src, int width, int height, int linesize) {
+    for (int i = 0; i < height; ++i) {
+        memcpy(dst, src, width);
+        dst += width;
+        src += linesize;
+    }
+}
+
+
 //渲染数据
-void drawFrame3(uint8_t *y, uint8_t *u, uint8_t *v) {
+void drawFrame3(AVFrame *avFrame) {
     //将yuv数据分别copy到对应的buffer中
 
-    memcpy(instance->yBuffer, y, instance->yBufferSize);
-    memcpy(instance->uBuffer, u, instance->uBufferSize);
-    memcpy(instance->vBuffer, v, instance->vBufferSize);
+    memcpy(instance->yBuffer, avFrame->data[0], instance->yBufferSize);
+    memcpy(instance->uBuffer, avFrame->data[1], instance->uBufferSize);
+    memcpy(instance->vBuffer, avFrame->data[2], instance->vBufferSize);
+
+//    int width = instance->pWidth;
+//    int height = instance->pHeight;
+//    copyFrameData(instance->yBuffer, avFrame->data[0], width, height, avFrame->linesize[0]);
+//    copyFrameData(instance->uBuffer, avFrame->data[1], width/2, height/2, avFrame->linesize[1]);
+//    copyFrameData(instance->vBuffer, avFrame->data[2], width/2, height/2, avFrame->linesize[2]);
 
     //opengl绘制
     drawFrame(instance);

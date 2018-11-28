@@ -51,6 +51,6 @@ void init(int pWidth, int pHeight);
 
 void drawFrame2(uint8_t *srcp);
 
-void drawFrame3(uint8_t *y, uint8_t *u,uint8_t *v);
+void drawFrame3(AVFrame *avFrame);
 
 #endif //FFMPEGTEST_ZSQ420P_H

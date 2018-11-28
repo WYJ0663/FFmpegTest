@@ -151,7 +151,7 @@ Java_com_ffmpeg_Play__1play(JNIEnv *env, jobject instance, jstring inputPath_) {
 //                              rgb_frame->linesize);
                     LOGE("解码第几帧=%d", i++);
 //                    drawFrame2(change(avFrame, videoCodec->height));
-                    drawFrame3(avFrame->data[0],avFrame->data[1],avFrame->data[2]);
+                    drawFrame3(avFrame);
 //                    call_video_play(rgb_frame);
                 }
             } else if (avPacket->stream_index == audioIndex) {

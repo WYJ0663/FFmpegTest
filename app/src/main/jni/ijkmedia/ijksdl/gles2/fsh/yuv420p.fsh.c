@@ -23,7 +23,7 @@
 
 static const char g_shader[] = IJK_GLES_STRING(
     precision highp float;
-    varying   highp vec2 vv2_Texcoord;
+    varying   highp vec2 vv2_Texcoord;um3_ColorConversionum3_ColorConversion
     uniform         mat3 um3_ColorConversion;
     uniform   lowp  sampler2D us2_SamplerX;
     uniform   lowp  sampler2D us2_SamplerY;
