@@ -24,6 +24,8 @@ add_library( # Sets the name of the library.
         gl5/opengles/esUtil.c
         gl5/opengles/matrix.c
         gl5/zsq420p.c
+
+        rtmp/rtmp_test.c
         )
 
 
@@ -47,6 +49,9 @@ set_target_properties(libswresample PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_
 
 add_library(libswscale SHARED IMPORTED)
 set_target_properties(libswscale PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libswscale.so)
+
+add_library(librtmp SHARED IMPORTED)
+set_target_properties(librtmp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/librtmp.so)
 
 #add_library(libsoundtouch
 #        SHARED
@@ -82,6 +87,8 @@ target_link_libraries( # Specifies the target library.
         libavutil
         libswresample
         libswscale
+
+        librtmp
         # libsoundtouch
         # Links the target library to the log library
         # included in the NDK.

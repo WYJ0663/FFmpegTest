@@ -16,7 +16,9 @@
 #include "ff_packet_queue.h"
 #include "gl5/gl.h"
 #include "gl5/zsq420p.h"
-
+#include "rtmp/rtmp_test.h"
+#include "rtmp/h264.h"
+#include "rtmp/acc.h"
 
 unsigned char *change(AVFrame *pFrame_, int height) {
     int newSize = (pFrame_->linesize[0] + pFrame_->linesize[1] + pFrame_->linesize[2]) * height;
@@ -47,7 +49,6 @@ unsigned char *change(AVFrame *pFrame_, int height) {
 
 JNIEXPORT void JNICALL
 Java_com_ffmpeg_Play__1play(JNIEnv *env, jobject instance, jstring inputPath_) {
-
 
     const char *url = (*env)->GetStringUTFChars(env, inputPath_, 0);
 
@@ -192,6 +193,16 @@ Java_com_ffmpeg_Play__1display(JNIEnv *env, jobject instance, jobject surface) {
 JNIEXPORT void JNICALL
 Java_com_ffmpeg_Play__1stop(JNIEnv *env, jobject instance) {
     LOGE("结束");
+
+    rtmp_init("rtmp://172.17.12.113:7777/live/room");
+    int i = 0;
+    while (i < 1000) {
+//        simplest_h264_parser("sdcard/test5.h264");
+        simplest_aac_parser("sdcard/nocturne.aac");
+//        simplest_aac_parser("sdcard/test.aac");
+        i++;
+    }
+
 }
 
 

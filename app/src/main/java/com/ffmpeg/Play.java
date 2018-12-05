@@ -23,6 +23,7 @@ public class Play implements SurfaceHolder.Callback {
         System.loadLibrary("avutil");
         System.loadLibrary("swresample");
         System.loadLibrary("swscale");
+        System.loadLibrary("rtmp");
         System.loadLibrary("native-lib");
     }
 

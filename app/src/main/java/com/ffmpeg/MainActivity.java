@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements Play.OnPlayCallba
     }
 
     public static final String url3 = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
-
+//    http://221.228.226.23/11/t/j/v/b/tjvbwspwhqdmgouolposcsfafpedmb/sh.yinyuetai.com/691201536EE4912BF7E4F1E2C67B8119.mp4
     public void player3(View view) {
         mPlayer.play(url3);
     }
