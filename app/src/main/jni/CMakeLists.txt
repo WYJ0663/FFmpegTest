@@ -26,6 +26,8 @@ add_library( # Sets the name of the library.
         gl5/zsq420p.c
 
         rtmp/rtmp_test.c
+
+        x264/x264_jni.c
         )
 
 
@@ -52,6 +54,9 @@ set_target_properties(libswscale PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR
 
 add_library(librtmp SHARED IMPORTED)
 set_target_properties(librtmp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/librtmp.so)
+
+add_library(libx264 SHARED IMPORTED)
+set_target_properties(libx264 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libx2641.so)
 
 #add_library(libsoundtouch
 #        SHARED
@@ -89,6 +94,7 @@ target_link_libraries( # Specifies the target library.
         libswscale
 
         librtmp
+        libx264
         # libsoundtouch
         # Links the target library to the log library
         # included in the NDK.
