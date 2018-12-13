@@ -28,6 +28,8 @@ add_library( # Sets the name of the library.
         rtmp/rtmp_test.c
 
         x264/x264_jni.c
+
+        fdk_aac/fdk_aac_jin.c
         )
 
 
@@ -57,6 +59,10 @@ set_target_properties(librtmp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/.
 
 add_library(libx264 SHARED IMPORTED)
 set_target_properties(libx264 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libx2641.so)
+
+add_library(libfdk-aac SHARED IMPORTED)
+set_target_properties(libfdk-aac PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libfdk-aac.so)
+
 
 #add_library(libsoundtouch
 #        SHARED
@@ -95,6 +101,7 @@ target_link_libraries( # Specifies the target library.
 
         librtmp
         libx264
+        libfdk-aac
         # libsoundtouch
         # Links the target library to the log library
         # included in the NDK.

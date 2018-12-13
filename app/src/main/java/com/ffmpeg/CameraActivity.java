@@ -13,6 +13,9 @@ import com.example.ffmpeg.R;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * 录制视频x264编码
+ */
 public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
     private SurfaceView surfaceView;
@@ -93,7 +96,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     }
 
 
-    private static Camera.Size getOptimalSize( List<Camera.Size> sizes, int w, int h) {
+    private static Camera.Size getOptimalSize(List<Camera.Size> sizes, int w, int h) {
         final double ASPECT_TOLERANCE = 0.1;
         double targetRatio = (double) h / w;
         Camera.Size optimalSize = null;
