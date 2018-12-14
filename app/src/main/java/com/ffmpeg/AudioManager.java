@@ -43,7 +43,7 @@ public class AudioManager {
     public void create() {
         bufferSizeInBytes = AudioRecord.getMinBufferSize(SAMPLE_RATE, channelConfig, audioEncoding);
         mAudioRecord = new AudioRecord(audioSource, SAMPLE_RATE, channelConfig, audioEncoding, bufferSizeInBytes);
-        init(CHANNELS, SAMPLE_RATE, BIT_RATE);
+        mBufferSize = init(CHANNELS, SAMPLE_RATE, BIT_RATE);
     }
 
     public void start() {
@@ -61,7 +61,7 @@ public class AudioManager {
         }
     }
 
-    private int mBufferSize = 4 * 1024;
+    private int mBufferSize;
 
     public void read() {
         openStream();
@@ -103,7 +103,7 @@ public class AudioManager {
         System.loadLibrary("native-lib");
     }
 
-    public native void init(int channels, int sampleRate, int bitRate);
+    public native int init(int channels, int sampleRate, int bitRate);
 
     public native void encodeAAC(byte[] bytes, int length);
 

@@ -13,13 +13,15 @@ const char *outfile1 = "/sdcard/2222.aac";
 
 FILE *out1;
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_ffmpeg_AudioManager_init(JNIEnv *env, jobject instance, jint channels, jint sampleRate, jint bitRate) {
 
     aac_init_param(channels, sampleRate, bitRate);
-    aac_init();
+    int size = aac_init();
 
     out1 = fopen(outfile1, "wb");
+
+    return size;
 }
 
 JNIEXPORT void JNICALL
