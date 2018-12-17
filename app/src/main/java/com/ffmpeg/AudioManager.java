@@ -109,6 +109,7 @@ public class AudioManager {
 
     public native void release();
 
+    public static native void changeWav2AAC();
 
     ////////////////////////////////////////////////////////////////////////////////////
     String fileName = Environment.getExternalStorageDirectory().getPath() + "/22test_audio.pcm";

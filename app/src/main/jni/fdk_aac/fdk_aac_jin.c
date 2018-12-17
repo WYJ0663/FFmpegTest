@@ -8,6 +8,7 @@
 #include <memory.h>
 #include "fdk_aac_test.h"
 #include "acc.h"
+#include "acc_enc.h"
 
 const char *outfile1 = "/sdcard/2222.aac";
 
@@ -28,14 +29,20 @@ JNIEXPORT void JNICALL
 Java_com_ffmpeg_AudioManager_encodeAAC(JNIEnv *env, jobject instance, jbyteArray bytes_, jint length) {
     jbyte *bytes = (*env)->GetByteArrayElements(env, bytes_, NULL);
     LOGE("length = %d", length);
+    int16_t *convert_buf = (int16_t *) malloc(length);
+    for (int i = 0; i < length / 2; i++) {
+        const uint8_t *in = &bytes[2 * i];
+        convert_buf[i] = in[0] | (in[1] << 8);
+    }
 
     int outLength = length;
-    char *out = calloc(outLength , sizeof(char));
-    LOGE("outLength1 = %d %d ", (length * sizeof(char)), bytes[0]);
+    uint8_t *out = malloc(outLength);
+    LOGE("outLength1 %d", outLength);
 
-    int len = aac_encode_audio(bytes, length, out, outLength);
+    int len = 0;
+    len = aac_encode_audio(convert_buf, length, out, outLength);
 
-    LOGE("len = %d %d %d %d", len, bytes[0], bytes[1], bytes[2]);
+    LOGE("len %d", len);
     fwrite(out, 1, len, out1);
 
     free(out);
@@ -49,4 +56,9 @@ Java_com_ffmpeg_AudioManager_release(JNIEnv *env, jobject instance) {
     fclose(out1);
 
     simplest_aac_parser(outfile1);
+}
+
+JNIEXPORT void JNICALL
+Java_com_ffmpeg_AudioManager_changeWav2AAC(JNIEnv *env, jclass type) {
+    aac_main();
 }

@@ -30,6 +30,8 @@ add_library( # Sets the name of the library.
         x264/x264_jni.c
 
         fdk_aac/fdk_aac_jin.c
+        fdk_aac/aac-enc.c
+        fdk_aac/wavreader.c
         )
 
 

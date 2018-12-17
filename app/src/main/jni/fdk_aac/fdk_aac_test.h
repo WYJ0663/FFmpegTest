@@ -10,72 +10,102 @@
 
 HANDLE_AACENCODER handle;
 int channels;
-int sampleRate;
-int bitRate;
+int sample_rate;
+int bitRate = 64000;;
 
 void aac_init_param(int _channels, int _sampleRate, int _bitRate) {
     channels = _channels;
-    sampleRate = _sampleRate;
+    sample_rate = _sampleRate;
     bitRate = _bitRate;
 }
-
 
 /**
  * 初始化fdk-aac的参数，设置相关接口使得
  * @return
  */
 int aac_init() {
-    LOGE("channels sampleRate bitRate %d %d %d",channels,sampleRate,bitRate);
-    //打开AAC音频编码引擎，创建AAC编码句柄
+    int aot = 2;
+    int afterburner = 1;
+    int eld_sbr = 0;
+    int vbr = 0;
+    CHANNEL_MODE mode = MODE_1;
+    AACENC_InfoStruct info = {0};
+    LOGE("channels sample_rate bitrate %d %d %d", channels, sample_rate, bitRate);
+    switch (channels) {
+        case 1:
+            mode = MODE_1;
+            break;
+        case 2:
+            mode = MODE_2;
+            break;
+        case 3:
+            mode = MODE_1_2;
+            break;
+        case 4:
+            mode = MODE_1_2_1;
+            break;
+        case 5:
+            mode = MODE_1_2_2;
+            break;
+        case 6:
+            mode = MODE_1_2_2_1;
+            break;
+        default:
+            LOGE("Unsupported WAV channels %d\n", channels);
+            return 1;
+    }
     if (aacEncOpen(&handle, 0, channels) != AACENC_OK) {
-        LOGE("Unable to open fdkaac encoder\n");
-        return -1;
+        LOGE("Unable to open encoder\n");
+        return 1;
     }
-
-    // AACENC_AOT设置为aac lc
-    if (aacEncoder_SetParam(handle, AACENC_AOT, 2) != AACENC_OK) {
+    if (aacEncoder_SetParam(handle, AACENC_AOT, aot) != AACENC_OK) {
         LOGE("Unable to set the AOT\n");
-        return -1;
+        return 1;
     }
-
-    if (aacEncoder_SetParam(handle, AACENC_SAMPLERATE, sampleRate) != AACENC_OK) {
-        LOGE("Unable to set the sampleRate\n");
-        return -1;
+    if (aot == 39 && eld_sbr) {
+        if (aacEncoder_SetParam(handle, AACENC_SBR_MODE, 1) != AACENC_OK) {
+            LOGE("Unable to set SBR mode for ELD\n");
+            return 1;
+        }
     }
-
-    // AACENC_CHANNELMODE设置为双通道
-    if (aacEncoder_SetParam(handle, AACENC_CHANNELMODE, MODE_2) != AACENC_OK) {
+    if (aacEncoder_SetParam(handle, AACENC_SAMPLERATE, sample_rate) != AACENC_OK) {
+        LOGE("Unable to set the AOT\n");
+        return 1;
+    }
+    if (aacEncoder_SetParam(handle, AACENC_CHANNELMODE, mode) != AACENC_OK) {
         LOGE("Unable to set the channel mode\n");
-        return -1;
+        return 1;
     }
-
     if (aacEncoder_SetParam(handle, AACENC_CHANNELORDER, 1) != AACENC_OK) {
         LOGE("Unable to set the wav channel order\n");
         return 1;
     }
-    if (aacEncoder_SetParam(handle, AACENC_BITRATE, bitRate) != AACENC_OK) {
-        LOGE("Unable to set the bitrate\n");
-        return -1;
+    if (vbr) {
+        if (aacEncoder_SetParam(handle, AACENC_BITRATEMODE, vbr) != AACENC_OK) {
+            LOGE("Unable to set the VBR bitrate mode\n");
+            return 1;
+        }
+    } else {
+        if (aacEncoder_SetParam(handle, AACENC_BITRATE, bitRate) != AACENC_OK) {
+            LOGE("Unable to set the bitrate\n");
+            return 1;
+        }
     }
-    if (aacEncoder_SetParam(handle, AACENC_TRANSMUX, 0) != AACENC_OK) { //0-raw 2-adts
+    if (aacEncoder_SetParam(handle, AACENC_TRANSMUX, TT_MP4_ADTS) != AACENC_OK) {
         LOGE("Unable to set the ADTS transmux\n");
-        return -1;
+        return 1;
     }
-
-    if (aacEncoder_SetParam(handle, AACENC_AFTERBURNER, 1) != AACENC_OK) {
-        LOGE("Unable to set the ADTS AFTERBURNER\n");
-        return -1;
+    if (aacEncoder_SetParam(handle, AACENC_AFTERBURNER, afterburner) != AACENC_OK) {
+        LOGE("Unable to set the afterburner mode\n");
+        return 1;
     }
-
     if (aacEncEncode(handle, NULL, NULL, NULL, NULL) != AACENC_OK) {
         LOGE("Unable to initialize the encoder\n");
-        return -1;
+        return 1;
     }
-
-    AACENC_InfoStruct info = {0};
     if (aacEncInfo(handle, &info) != AACENC_OK) {
         LOGE("Unable to get the encoder info\n");
-        return -1;
+        return 1;
     }
 
     //返回数据给上层，表示每次传递多少个数据最佳，这样encode效率最高
@@ -85,51 +115,6 @@ int aac_init() {
     return inputSize;
 }
 
-//static INT_PCM inputBuffer[8*2048];
-//static UCHAR ancillaryBuffer[50];
-//static AACENC_MetaData metaDataSetup;
-//static UCHAR outputBuffer[8192];
-
-int aac_encode_audio2( unsigned char *inBytes, int length, unsigned char *outBytes, int outLength) {
-    void * inBuffer[] = { inBytes };
-     INT inBufferIds[] = { IN_AUDIO_DATA };
-     INT inBufferSize[] = { length };
-     INT inBufferElSize[] = { sizeof(INT_PCM), };
-
-    void * outBuffer[] = { outBytes };
-     INT outBufferIds[] = { OUT_BITSTREAM_DATA };
-     INT outBufferSize[] = { length };
-     INT outBufferElSize[] = { sizeof(UCHAR) };
-
-
-    AACENC_BufDesc inBufDesc;
-    AACENC_BufDesc outBufDesc;
-
-    inBufDesc.numBufs = 1;
-    inBufDesc.bufs = (void ** )&inBuffer;
-    inBufDesc.bufferIdentifiers = inBufferIds;
-    inBufDesc.bufSizes = inBufferSize;
-    inBufDesc.bufElSizes = inBufferElSize;
-
-    outBufDesc.numBufs = 1;
-    outBufDesc.bufs = (void ** )&outBuffer;
-    outBufDesc.bufferIdentifiers = outBufferIds;
-    outBufDesc.bufSizes = outBufferSize;
-    outBufDesc.bufElSizes = outBufferElSize;
-
-    AACENC_InArgs inargs;
-    AACENC_OutArgs outargs;
-    inargs.numInSamples = length / 2;
-    AACENC_ERROR err = aacEncEncode(handle, &inBufDesc, &outBufDesc, &inargs, &outargs);
-
-    LOGE("all %d %d ", err, outargs.numOutBytes);
-
-    if (err != AACENC_OK) {
-        LOGE("Encoding aac failed %d %d ", err, outargs.numOutBytes);
-        return err;
-    }
-    return outargs.numOutBytes;
-}
 /**
  * Fdk-AAC库压缩裸音频PCM数据，转化为AAC，这里为什么用fdk-aac，这个库相比普通的aac库，压缩效率更高
  * @param inBytes
@@ -138,44 +123,45 @@ int aac_encode_audio2( unsigned char *inBytes, int length, unsigned char *outByt
  * @param outLength
  * @return
  */
-int aac_encode_audio(unsigned char *inBytes, int length, unsigned char *outBytes, int outLength) {
-    void *in_ptr, *out_ptr;
-    AACENC_BufDesc in_buf = {0};
+int aac_encode_audio(unsigned char *convert_buf, int read, unsigned char *outbuf, int outLength) {
+    AACENC_BufDesc in_buf = {0}, out_buf = {0};
+    AACENC_InArgs in_args = {0};
+    AACENC_OutArgs out_args = {0};
     int in_identifier = IN_AUDIO_DATA;
-    int in_elem_size = 2;
-    //传递input数据给in_buf
-    in_ptr = inBytes;
-    in_buf.bufs = &in_ptr;
+    int in_size, in_elem_size;
+    int out_identifier = OUT_BITSTREAM_DATA;
+    int out_size, out_elem_size;
+    void *in_ptr, *out_ptr;
+
+    in_ptr = convert_buf;
+    in_size = read;
+    in_elem_size = 2;
+
+    in_args.numInSamples = read <= 0 ? -1 : read / 2;
     in_buf.numBufs = 1;
+    in_buf.bufs = &in_ptr;
     in_buf.bufferIdentifiers = &in_identifier;
-    in_buf.bufSizes = &length;
+    in_buf.bufSizes = &in_size;
     in_buf.bufElSizes = &in_elem_size;
 
-    AACENC_BufDesc out_buf = {0};
-    int out_identifier = OUT_BITSTREAM_DATA;
-    int elSize = 1;
-    //out数据放到out_buf中
-    out_ptr = outBytes;
-    out_buf.bufs = &out_ptr;
+    out_ptr = outbuf;
+//    out_size = sizeof(outbuf);
+    out_size = outLength;
+    out_elem_size = 1;
     out_buf.numBufs = 1;
+    out_buf.bufs = &out_ptr;
     out_buf.bufferIdentifiers = &out_identifier;
-    out_buf.bufSizes = &outLength;
-    out_buf.bufElSizes = &elSize;
+    out_buf.bufSizes = &out_size;
+    out_buf.bufElSizes = &out_elem_size;
 
-    AACENC_InArgs in_args = {0};
-    in_args.numInSamples = length / 2;  //size为pcm字节数
-
-    AACENC_OutArgs out_args = {0};
     AACENC_ERROR err;
-
-    //利用aacEncEncode来编码PCM裸音频数据，上面的代码都是fdk-aac的流程步骤
     if ((err = aacEncEncode(handle, &in_buf, &out_buf, &in_args, &out_args)) != AACENC_OK) {
-        LOGE("Encoding aac failed\n err=%d",err);
-        return err;
+        if (err == AACENC_ENCODE_EOF)
+        LOGE("Encoding failed\n");
+        return 0;
     }
-    LOGE("all err=%d", err);
+    LOGE("numOutBytes %d", out_args.numOutBytes);
 
-    //返回编码后的有效字段长度
     return out_args.numOutBytes;
 }
 

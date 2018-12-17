@@ -36,7 +36,12 @@ public class AudioActivity extends Activity {
             }
         });
 
-
+        findViewById(R.id.change).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AudioManager.changeWav2AAC();
+            }
+        });
     }
 
 }
