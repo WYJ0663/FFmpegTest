@@ -118,7 +118,6 @@ void setParams() {
         params.i_height = in_height;
     }
 
-
     //并行编码多帧
     params.i_threads = X264_SYNC_LOOKAHEAD_AUTO;
     params.i_fps_num = 25;//getFps();
@@ -132,13 +131,13 @@ void setParams() {
     params.i_timebase_den = params.i_fps_num;
 
     // Intra refres:
-    params.i_keyint_max = 50;
+    params.i_keyint_max = 25;
     params.i_keyint_min = 1;
     params.b_intra_refresh = 1;
 
     //参数i_rc_method表示码率控制，CQP(恒定质量)，CRF(恒定码率)，ABR(平均码率)
-    //平均码率
-    params.rc.i_rc_method = X264_RC_ABR;
+    //恒定码率，会尽量控制在固定码率
+    params.rc.i_rc_method = X264_RC_CRF;
     //图像质量控制,rc.f_rf_constant是实际质量，越大图像越花，越小越清晰
     //param.rc.f_rf_constant_max ，图像质量的最大值
     params.rc.f_rf_constant = 25;
@@ -149,15 +148,15 @@ void setParams() {
     params.rc.i_bitrate = bitrate / 1000;
     //瞬时最大码率,平均码率模式下，最大瞬时码率，默认0(与-B设置相同)
     params.rc.i_vbv_max_bitrate = bitrate / 1000 * 1.2;
-    params.b_repeat_headers = 0;// 重复SPS/PPS 放到关键帧前面
-    params.b_annexb = 1;//if set, place start codes (4 bytes) before NAL units,
+    params.b_repeat_headers = 1;
+    params.b_annexb = 1;
 
     //是否把SPS和PPS放入每一个关键帧
     //SPS Sequence Parameter Set 序列参数集，PPS Picture Parameter Set 图像参数集
     //为了提高图像的纠错能力,该参数设置是让每个I帧都附带sps/pps。
     //param.b_repeat_headers = 1;
     //设置Level级别,编码复杂度
-    params.i_level_idc = 30;
+    params.i_level_idc = 51;
 
     //profile
     //默认：无
